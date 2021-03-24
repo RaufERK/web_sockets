@@ -1,20 +1,50 @@
+require('dotenv').config();
+const mongoose = require('mongoose');
 const express = require('express');
+const router = express.Router();
 const app = express();
+const { messages, userFromSession } = require('./db/mongo');
+const user = require('./routes/user');
+const upLoad = require('./routes/upload');
+const session = require('express-session');
+const { secret, mongoUrl, PORT } = process.env;
+const MongoStore = require('connect-mongo');
+const { Messages, Users, mongoOption, dbConnect } = require('./db/mongo');
+
+dbConnect();
+
 app.set('view engine', 'hbs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public'));
+app.use(
+  session({
+    secret,
+    resave: true,
+    saveUninitialized: false,
+    cookie: { secure: false },
+    store: MongoStore.create({ mongoUrl }),
+  })
+);
 
-const messages = [
-  { user: 'Goshan', message: 'message' },
-  { user: 'Gennad', message: 'message from Gennad' },
-];
-const userFromSession = 'Rauf';
-
-app.route('/').get((req, res) => {
-  res.render('index', { messages });
+app.use((req, res, next) => {
+  res.locals.username = req.session.username;
+  next();
 });
 
+const protection = (req, res, next) => {
+  if (!req.session.username) return res.redirect('/user');
+  next();
+};
+
+app.use('/user', user);
+app.use('/upload', upLoad);
+
+app.get('/', protection, async (req, res) => {
+  const messages = await Messages.find();
+  console.log(' messages =>', messages);
+  res.render('index', { messages });
+});
 //подключаем вебСокеты
 const WebSocket = require('ws');
 //Создаё соединение на отдельном порту
@@ -26,23 +56,20 @@ const parser = (param) => JSON.parse(param);
 
 wsServer.on('connection', (event) => {
   // ПРОСЛУШИВАЕМ ВСЕ ССООБЩЕНИЯ ОТ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ
-  event.on('message', (messageBody) => {
+  event.on('message', async (messageBody) => {
     //все сообщения прилетают и отправляются в тектовом формате
     console.log('ПОЛУЧИЛИ ССОБЩЕНИЕ ===>>>>', messageBody);
-    const { user, message } = parser(messageBody);
+    const { username, message } = parser(messageBody);
+
+    //записываем в базу автора и само сообщение
+    await Messages.create({ username, message });
 
     //Пересылает полученое в чат сообщение всем клиентам (участникам)
     wsServer.clients.forEach((client) =>
       //посылаем в виде строки
-      client.send(stringer({ user: userFromSession, message }))
+      client.send(stringer({ username, message }))
     );
-
-    //записываем в базу автора и само сообщение
-    messages.push({ user, message });
   });
-
-  //при соединении посылаем на фронт имя пользователя (из сесии)
-  event.send(stringer({ user: userFromSession, command: 'SET_USER' }));
 });
 
-app.listen(3000, () => console.log('Server started!!'));
+app.listen(PORT || 3000, () => console.log('Server started!! PORT =>', PORT));

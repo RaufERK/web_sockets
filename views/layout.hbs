@@ -6,7 +6,19 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ELBRUS CHAT</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
+<div id='username'>{{username}}</div>
+<nav>
+  {{#if username}}
+  <a href="/">chat</a>
+  <a href="/user/logout">logout</a>
+  <a href="/upload">upload files</a>
+  {{else}}
+  <a href="/user/">signIn</a>
+  <a href="/user/signup">signUp</a>
+  {{/ if}}
+</nav>
 
 <body>
   {{{body}}}

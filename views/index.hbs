@@ -1,42 +1,22 @@
-<h3 id='userTitle'>USER:</h3>
-<ul id='list'>
-  {{#each messages}}
-  <li>
-    <div class='msg'>
-      {{this.user}}
-    </div>
-    <div>
-      {{this.message}}
-    </div>
-  </li>
-  {{/each}}
-</ul>
-
-<form action="/" method="post" id='chatForm'>
-  <input type="text" name="message" placeholder="enter toy message">
-  <button>SEND MESSAGE</button>
-</form>
-
 <script defer src="/front.js"></script>
-<style>
-  h3 {
-    margin: 20px;
-    padding: 20px;
-    background-color: cornsilk;
-  }
+<div class="container">
+  <h3 id='userTitle'>USER:</h3>
+  <ol id='list' class='list'>
+    {{#each messages}}
+    <li>
+      <div class='msg'>
+        {{this.username}}
+      </div>
+      <div class='msg'>
+        {{this.message}}
+      </div>
+    </li>
+    {{/each}}
+  </ol>
 
-  .msg {
-    width: 100px;
-    margin: 5px;
-  }
+  <form action="/" method="post" id='chatForm'>
+    <input type="text" name="message" placeholder="enter toy message">
+    <button class="myBtn">SEND MESSAGE</button>
+  </form>
 
-  li {
-    display: flex;
-    background-color: ;
-    margin: 5px;
-  }
-
-  li:nth-child(odd) {
-    background-color: lightblue;
-  }
-</style>
+</div>

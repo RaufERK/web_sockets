@@ -1,37 +1,31 @@
-const chatForm = document.getElementById('chatForm');
 const list = document.getElementById('list');
 const userTitle = document.getElementById('userTitle');
 const socket = new WebSocket('ws://localhost:8080');
-let userFront = null;
+const myUserName = document.getElementById('username').innerText;
+console.log(' myUserName ====>>>', myUserName);
+userTitle.innerHTML = ` user : <strong>${myUserName}</strong>`;
 
-chatForm.addEventListener('submit', async (event) => {
+document.forms.chatForm.onsubmit = (event) => {
   event.preventDefault();
   const message = event.target.message.value;
   event.target.message.value = '';
-  socket.send(JSON.stringify({ user: userFront, message }));
-});
+  socket.send(JSON.stringify({ username: myUserName, message }));
+};
 
 //ОБработчик сокет-событий => при устанновлени соединения
-socket.onopen = function (e) {
+socket.onopen = () => {
   console.log('Соединение установлено  !!!!!');
 };
 
 //Обработчик на случай получения сообщения
-socket.onmessage = function (event) {
+socket.onmessage = (event) => {
   console.log(`[message] Данные получены с сервера: ${event.data}`);
-  const { user, message, command } = JSON.parse(event.data);
-
-  //при первом подключении получаем имя пользователя под которым авторизовались
-  if (command === 'SET_USER') {
-    userTitle.innerText = `USER : ${user}`;
-    userFront = user;
-  } else {
-    list.innerHTML += `<li><div class='msg'>${user}</div><div>${message}</div></li>`;
-  }
+  const { username, message } = JSON.parse(event.data);
+  list.innerHTML += `<li><div class='msg'>${username}</div><div class='msg'>${message}</div></li>`;
 };
 
 //Обработчик на случай разрыва соединения
-socket.onclose = function (event) {
+socket.onclose = (event) => {
   console.log(' EVENT ==>', event);
   if (event.wasClean) {
     console.log(
@@ -44,6 +38,6 @@ socket.onclose = function (event) {
 };
 
 //Обработчик в случае ошибки
-socket.onerror = function (error) {
+socket.onerror = (error) => {
   console.log(`[error] ${error.message}`);
 };
