@@ -1,4 +1,5 @@
 require('dotenv').config();
+var helmet = require('helmet');
 const mongoose = require('mongoose');
 const express = require('express');
 const router = express.Router();
@@ -14,6 +15,7 @@ const { Messages, Users, mongoOption, dbConnect } = require('./db/mongo');
 dbConnect();
 
 app.set('view engine', 'hbs');
+// app.use(helmet());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public'));
@@ -33,6 +35,7 @@ app.use((req, res, next) => {
 });
 
 const protection = (req, res, next) => {
+  console.log('MIDLWARE => req.session.username = ', req.session.username);
   if (!req.session.username) return res.redirect('/user');
   next();
 };
@@ -41,8 +44,8 @@ app.use('/user', user);
 app.use('/upload', upLoad);
 
 app.get('/', protection, async (req, res) => {
+  console.log('GET / =====>>>>');
   const messages = await Messages.find();
-  console.log(' messages =>', messages);
   res.render('index', { messages });
 });
 //подключаем вебСокеты

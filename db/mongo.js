@@ -9,7 +9,7 @@ const mongoOption = {
 const dbConnect = () =>
   mongoose.connect(mongoUrl, mongoOption, async () => {
     console.log('DB CONNECTED!!!');
-    // await Messages.deleteMany();
+    await Messages.deleteMany();
   });
 
 const Messages = mongoose.model('Message', {

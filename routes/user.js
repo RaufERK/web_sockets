@@ -23,7 +23,7 @@ router
       console.log('===============');
       console.log(err);
     }
-    res.redirect('/');
+    res.redirect('/').end();
   });
 
 router.get('/logout', (req, res) => {
